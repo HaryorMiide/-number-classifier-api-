@@ -5,8 +5,7 @@ const mathCache = new NodeCache({ stdTTL: 3600 }); // Cache for 1 hour
 // Optimized prime check with cache
 const is_Prime = (num) => {
   const cacheKey = `prime_${num}`;
-  const cached = mathCache.get(cacheKey);
-  if (cached !== undefined) return cached;
+  if (mathCache.has(cacheKey)) return mathCache.get(cacheKey);
 
   if (num <= 1) return false;
   if (num <= 3) return true;
@@ -75,11 +74,15 @@ const Digitsum = (num) => {
 
 const getFunFact = async (num) => {
   try {
-    const response = await axios.get(`http://numbersapi.com/${num}?json`);
+    const response = await Promise.race([
+      axios.get(`http://numbersapi.com/${num}?json`),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Timeout")), 500)
+      ),
+    ]);
     return response.data.text;
-  } catch (error) {
-    console.error("Error fetching fun fact:", error);
-    return "No fun fact available";
+  } catch {
+    return "Interesting number fact unavailable";
   }
 };
 

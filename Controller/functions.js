@@ -1,55 +1,49 @@
 const {
   is_Prime,
   is_Armstrong,
-  is_perfect,
+  is_Perfect,
   Digitsum,
   getFunFact,
 } = require("../utils/number");
 const NodeCache = require("node-cache");
-const responseCache = new NodeCache({ stdTTL: 300, checkperiod: 60 });
+const responseCache = new NodeCache({ stdTTL: 3600 });
 
+// Add separate cache for fun facts with longer TTL
+const funFactCache = new NodeCache({ stdTTL: 86400 }); // 24 hours for fun facts
+
+// Add at top
 const CACHE_VERSION = 1;
 
 const getNumberDetails = async (req, res) => {
   const num = req.validNumber;
   const absNum = Math.abs(num);
-  const cacheKey = `${CACHE_VERSION}_${absNum}`;
+  const cacheKey = `${CACHE_VERSION}_${num}`;
 
-  if (responseCache.has(cacheKey)) {
-    const cached = responseCache.get(cacheKey);
-    return res.json({
-      ...cached,
-      number: num,
-      properties: [
-        ...cached.properties.filter((p) => p !== "even" && p !== "odd"),
-        num % 2 === 0 ? "even" : "odd",
-      ],
-    });
+  // Cache check
+  const cached = responseCache.get(cacheKey);
+  if (cached) {
+    return res.json(cached);
   }
 
-  // FIX 1: Corrected is_Prime function call
+  // Parallel execution
   const [is_prime, is_perfect, is_armstrong, digit_sum] = await Promise.all([
-    Promise.resolve(is_Prime(absNum)),
+    Promise.resolve(num < 0 ? false : is_Prime(absNum)),
     Promise.resolve(is_Perfect(absNum)),
     Promise.resolve(is_Armstrong(absNum)),
     Promise.resolve(Digitsum(absNum)),
   ]);
 
-  // FIX 2: Ensure fun_fact always has a value
+  // Get fun fact with fallback
   let fun_fact;
   try {
     fun_fact = await getFunFact(num);
-  } catch (error) {
+  } catch {
     fun_fact = is_armstrong
       ? `${num} is an Armstrong number`
       : "Interesting number fact";
   }
 
-  // Ensure fun_fact is never empty
-  if (!fun_fact?.trim()) {
-    fun_fact = "Interesting number fact unavailable";
-  }
-
+  // Build response
   const response = {
     number: num,
     is_prime,
@@ -62,11 +56,11 @@ const getNumberDetails = async (req, res) => {
     fun_fact,
   };
 
-  responseCache.set(cacheKey, {
-    ...response,
-    number: absNum,
-    properties: response.properties.filter((p) => p !== "even" && p !== "odd"),
-  });
+  // Cache the response
+  responseCache.set(cacheKey, response);
+
+  // Log the response before sending (for debugging)
+  console.log('Sending response:', response);
 
   res.json(response);
 };

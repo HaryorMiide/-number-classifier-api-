@@ -57,3 +57,5 @@ const getNumberDetails = async (req, res) => {
   responseCache.set(cacheKey, response);
   res.json(response);
 };
+
+module.exports = { getNumberDetails };

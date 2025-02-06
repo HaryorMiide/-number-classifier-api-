@@ -18,55 +18,45 @@ const getNumberDetails = async (req, res) => {
   const num = req.validNumber;
   const absNum = Math.abs(num);
   const cacheKey = `${CACHE_VERSION}_${num}`;
-  const funFactCacheKey = `fun_${num}`;
 
-  // Main response cache check
+  // Cache check
   const cached = responseCache.get(cacheKey);
   if (cached) {
     return res.json(cached);
   }
 
-  // Parallel execution of all calculations including fun fact
-  const [calculations, funFact] = await Promise.all([
-    // Group all synchronous calculations
-    Promise.resolve({
-      is_prime: num < 0 ? false : is_Prime(absNum),
-      is_perfect: is_Perfect(absNum),
-      is_armstrong: is_Armstrong(absNum),
-      digit_sum: Digitsum(absNum),
-    }),
-    // Handle fun fact with separate caching
-    (async () => {
-      const cachedFact = funFactCache.get(funFactCacheKey);
-      if (cachedFact) return cachedFact;
-
-      try {
-        const fact = await getFunFact(num);
-        funFactCache.set(funFactCacheKey, fact);
-        return fact;
-      } catch (error) {
-        const fallback = calculations.is_armstrong
-          ? `${num} is an Armstrong number`
-          : "Interesting number fact";
-        funFactCache.set(funFactCacheKey, fallback);
-        return fallback;
-      }
-    })()
+  // Parallel execution
+  const [is_prime, is_perfect, is_armstrong, digit_sum] = await Promise.all([
+    Promise.resolve(num < 0 ? false : is_Prime(absNum)),
+    Promise.resolve(is_Perfect(absNum)),
+    Promise.resolve(is_Armstrong(absNum)),
+    Promise.resolve(Digitsum(absNum)),
   ]);
 
+  // Get fun fact with fallback
+  let fun_fact;
+  try {
+    fun_fact = await getFunFact(num);
+  } catch {
+    fun_fact = is_armstrong
+      ? `${num} is an Armstrong number`
+      : "Interesting number fact";
+  }
+
+  // Build response
   const response = {
     number: num,
-    is_prime: calculations.is_prime,
-    is_perfect: calculations.is_perfect,
+    is_prime,
+    is_perfect,
     properties: [
-      ...(calculations.is_armstrong ? ["armstrong"] : []),
+      ...(is_armstrong ? ["armstrong"] : []),
       num % 2 === 0 ? "even" : "odd",
     ],
-    digit_sum: calculations.digit_sum,
-    fun_fact: funFact
+    digit_sum,
+    fun_fact,
   };
 
-  // Cache the complete response
+  // Cache the response
   responseCache.set(cacheKey, response);
 
   res.json(response);

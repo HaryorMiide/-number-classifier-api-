@@ -1,5 +1,5 @@
 const validateNumber = (req, res, next) => {
-  const { number } = req.query;
+  const number = req.params.number || req.query.number;
 
   if (!number) {
     return res.status(400).json({

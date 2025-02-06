@@ -24,7 +24,12 @@ app.get("/api/health", (req, res) => {
 });
 
 // Main endpoint
-app.get("/api/classify-number", validateNumber, getNumberDetails);
+
+app.get(
+  ["/api/classify-number", "/api/classify-number/:number"],
+  validateNumber,
+  getNumberDetails
+);
 
 // Error handling
 app.use((err, req, res, next) => {

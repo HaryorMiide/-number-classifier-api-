@@ -7,7 +7,7 @@ const is_prime = (num) => {
   const cacheKey = `prime_${num}`;
   if (mathCache.has(cacheKey)) return mathCache.get(cacheKey);
 
-  if (num <= 1) return false;
+  if (num <= 1) return false;  // This catches negative numbers and 1
   if (num <= 3) return true;
   if (num % 2 === 0 || num % 3 === 0) return false;
 
@@ -72,17 +72,21 @@ const Digitsum = (num) => {
   return sum;
 };
 
-const getFunFact = async (num) => {
+const getFunFact = async (number) => {
   try {
-    const response = await Promise.race([
-      axios.get(`http://numbersapi.com/${num}?json`),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Timeout")), 500)
-      ),
-    ]);
-    return response.data.text;
-  } catch {
-    return "Interesting number fact unavailable";
+    const response = await axios.get(
+      `http://numbersapi.com/${number}`,
+      {
+        timeout: 3000, // 3 second timeout
+        headers: {
+          'Accept': 'text/plain',
+          'Cache-Control': 'no-transform'
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error('Failed to fetch fun fact');
   }
 };
 

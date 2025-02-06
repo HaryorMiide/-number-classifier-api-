@@ -7,7 +7,7 @@ const is_Prime = (num) => {
   const cacheKey = `prime_${num}`;
   if (mathCache.has(cacheKey)) return mathCache.get(cacheKey);
 
-  if (num <= 1) return false;
+  if (num <= 1) return false;  // This catches negative numbers and 1
   if (num <= 3) return true;
   if (num % 2 === 0 || num % 3 === 0) return false;
 

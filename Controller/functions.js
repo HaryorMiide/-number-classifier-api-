@@ -31,7 +31,7 @@ const getNumberDetails = async (req, res) => {
 
   // Parallel execution
   const [is_prime, is_perfect, is_armstrong, digit_sum] = await Promise.all([
-    Promise.resolve(is_Prime(absNum)),
+    Promise.resolve(num < 0 ? false : is_Prime(absNum)),
     Promise.resolve(is_Perfect(absNum)),
     Promise.resolve(is_Armstrong(absNum)),
     Promise.resolve(Digitsum(absNum)),

@@ -3,7 +3,7 @@ const NodeCache = require("node-cache");
 const mathCache = new NodeCache({ stdTTL: 3600 }); // Cache for 1 hour
 
 // Optimized prime check with cache
-const is_prime = (num) => {
+const is_Prime = (num) => {
   const cacheKey = `prime_${num}`;
   if (mathCache.has(cacheKey)) return mathCache.get(cacheKey);
 
@@ -25,7 +25,7 @@ const is_prime = (num) => {
 };
 
 // Optimized perfect number check with cache
-const is_perfect = (num) => {
+const is_Perfect = (num) => {
   const cacheKey = `perfect_${num}`;
   const cached = mathCache.get(cacheKey);
   if (cached !== undefined) return cached;
@@ -77,7 +77,7 @@ const getFunFact = async (number) => {
     const response = await axios.get(
       `http://numbersapi.com/${number}`,
       {
-        timeout: 3000, // 3 second timeout
+        timeout: 3000,
         headers: {
           'Accept': 'text/plain',
           'Cache-Control': 'no-transform'
@@ -86,8 +86,9 @@ const getFunFact = async (number) => {
     );
     return response.data;
   } catch (error) {
-    throw new Error('Failed to fetch fun fact');
+    console.error('Fun fact error:', error.message);
+    return `${number} is a number`; // Default fallback that always works
   }
 };
 
-module.exports = { is_prime, is_perfect, is_Armstrong, Digitsum, getFunFact };
+module.exports = { is_Prime, is_Perfect, is_Armstrong, Digitsum, getFunFact };

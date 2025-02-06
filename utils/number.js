@@ -3,7 +3,7 @@ const NodeCache = require("node-cache");
 const mathCache = new NodeCache({ stdTTL: 3600 }); // Cache for 1 hour
 
 // Optimized prime check with cache
-const is_Prime = (num) => {
+const is_prime = (num) => {
   const cacheKey = `prime_${num}`;
   if (mathCache.has(cacheKey)) return mathCache.get(cacheKey);
 
@@ -25,7 +25,7 @@ const is_Prime = (num) => {
 };
 
 // Optimized perfect number check with cache
-const is_Perfect = (num) => {
+const is_perfect = (num) => {
   const cacheKey = `perfect_${num}`;
   const cached = mathCache.get(cacheKey);
   if (cached !== undefined) return cached;
@@ -86,4 +86,4 @@ const getFunFact = async (num) => {
   }
 };
 
-module.exports = { is_Prime, is_Perfect, is_Armstrong, Digitsum, getFunFact };
+module.exports = { is_prime, is_perfect, is_Armstrong, Digitsum, getFunFact };

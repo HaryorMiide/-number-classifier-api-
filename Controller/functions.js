@@ -1,7 +1,7 @@
 const {
-  is_Prime,
+  is_prime,
   is_Armstrong,
-  is_Perfect,
+  is_perfect,
   Digitsum,
   getFunFact,
 } = require("../utils/number");
@@ -31,8 +31,8 @@ const getNumberDetails = async (req, res) => {
 
   // Parallel execution
   const [is_prime, is_perfect, is_armstrong, digit_sum] = await Promise.all([
-    Promise.resolve(is_Prime(absNum)),
-    Promise.resolve(is_Perfect(absNum)),
+    Promise.resolve(num > 1 ? is_prime(num) : false),
+    Promise.resolve(is_perfect(absNum)),
     Promise.resolve(is_Armstrong(absNum)),
     Promise.resolve(Digitsum(absNum)),
   ]);

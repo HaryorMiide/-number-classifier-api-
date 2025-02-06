@@ -36,8 +36,11 @@ const getNumberDetails = async (req, res) => {
   // Get fun fact with fallback
   let fun_fact;
   try {
+    console.log('Fetching fun fact for number:', num);
     fun_fact = await getFunFact(num);
-  } catch {
+    console.log('Received fun fact:', fun_fact);
+  } catch (error) {
+    console.error('Error in controller while getting fun fact:', error);
     fun_fact = is_armstrong
       ? `${num} is an Armstrong number`
       : "Interesting number fact";

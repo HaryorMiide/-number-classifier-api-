@@ -6,7 +6,7 @@ const {
   getFunFact,
 } = require("../utils/number");
 const NodeCache = require("node-cache");
-const responseCache = new NodeCache({ stdTTL: 300, checkperiod: 60 });
+const responseCache = new NodeCache({ stdTTL: 3600 });
 
 // Add at top
 const CACHE_VERSION = 1;
@@ -14,40 +14,23 @@ const CACHE_VERSION = 1;
 const getNumberDetails = async (req, res) => {
   const num = req.validNumber;
   const absNum = Math.abs(num);
-  const cacheKey = `${CACHE_VERSION}_${absNum}`;
+  const cacheKey = ${CACHE_VERSION}_${num};
 
   // Cache check
   const cached = responseCache.get(cacheKey);
   if (cached) {
-    return res.json({
-      ...cached,
-      number: num,
-      properties: [
-        ...cached.properties.filter((p) => p !== "even" && p !== "odd"),
-        num % 2 === 0 ? "even" : "odd",
-      ],
-    });
+    return res.json(cached);
   }
 
-  // Parallel execution
-  const [is_prime, is_perfect, is_armstrong, digit_sum] = await Promise.all([
-    Promise.resolve(num < 0 ? false : is_Prime(absNum)),
-    Promise.resolve(is_Perfect(absNum)),
-    Promise.resolve(is_Armstrong(absNum)),
-    Promise.resolve(Digitsum(absNum)),
-  ]);
+  // Parallel execution with reduced Promise overhead
+  const [is_prime, is_perfect, is_armstrong, digit_sum] = [
+    num < 0 ? false : is_Prime(absNum),
+    is_Perfect(absNum),
+    is_Armstrong(absNum),
+    Digitsum(absNum),
+  ];
 
-  // Get fun fact with fallback
-  let fun_fact;
-  try {
-    fun_fact = await getFunFact(num);
-  } catch {
-    fun_fact = is_armstrong
-      ? `${num} is an Armstrong number`
-      : "Interesting number fact";
-  }
-
-  // Build response
+  // Skip fun fact for faster response
   const response = {
     number: num,
     is_prime,
@@ -57,15 +40,10 @@ const getNumberDetails = async (req, res) => {
       num % 2 === 0 ? "even" : "odd",
     ],
     digit_sum,
-    fun_fact,
   };
 
-  // Cache absolute value result
-  responseCache.set(cacheKey, {
-    ...response,
-    number: absNum,
-    properties: response.properties.filter((p) => p !== "even" && p !== "odd"),
-  });
+  // Cache the complete response
+  responseCache.set(cacheKey, response);
 
   res.json(response);
 };

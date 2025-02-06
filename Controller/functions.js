@@ -7,25 +7,13 @@ const {
 } = require("../utils/number");
 
 const getNumberDetails = async (req, res) => {
-  const { number } = req.query;
-  const num = parseInt(number);
-
-  // Validate input
-  if (isNaN(num)) {
-    return res.status(400).json({
-      number: "alphabet",
-      error: true,
-    });
-  }
-  if (num <= 0) {
-    return res.status(400).json({ message: "Number must be greater than 0" });
-  }
+  const num = req.validNumber;
 
   // Perform calculations
-  const is_prime = is_Prime(num);
+  const is_prime = num > 1 ? is_Prime(num) : false;
   const is_perfect = is_Perfect(num);
-  const is_armstrong = is_Armstrong(num);
-  const digit_sum = Digitsum(num);
+  const is_armstrong = is_Armstrong(Math.abs(num));
+  const digit_sum = Digitsum(Math.abs(num));
 
   // Determine properties
   let properties = [];
@@ -33,7 +21,7 @@ const getNumberDetails = async (req, res) => {
   if (num % 2 !== 0) properties.push("odd");
   else properties.push("even");
 
-  // Fetch fun fact from API
+  // Fetch fun fact from Numbers API
   let fun_fact = "No fun fact available";
   try {
     fun_fact = await getFunFact(num);
@@ -41,7 +29,7 @@ const getNumberDetails = async (req, res) => {
     console.error("Error fetching fun fact:", error);
   }
 
-  // Send the response
+  // Send response with all required fields
   res.json({
     number: num,
     is_prime,

@@ -1,7 +1,7 @@
 const axios = require("axios");
 
 const is_Prime = (num) => {
-  if (num <= 1) return false;
+  if (num <= 1) return false; // Prime numbers are positive and >1
   if (num === 2) return true;
   if (num % 2 === 0) return false;
 
@@ -12,7 +12,7 @@ const is_Prime = (num) => {
 };
 
 const is_Perfect = (num) => {
-  if (num <= 1) return false;
+  if (num <= 1) return false; // Perfect numbers must be positive
 
   let temp = 1;
   for (let i = 2; i <= Math.sqrt(num); i++) {
@@ -28,8 +28,8 @@ const is_Perfect = (num) => {
 
 const is_Armstrong = (num) => {
   let sum = 0;
-  let temp = num;
-  const power = Math.floor(Math.log10(num)) + 1;
+  let temp = Math.abs(num); // Work with absolute value
+  const power = Math.floor(Math.log10(Math.abs(num))) + 1;
 
   while (temp > 0) {
     const rem = temp % 10;
@@ -37,15 +37,18 @@ const is_Armstrong = (num) => {
     temp = Math.floor(temp / 10);
   }
 
-  return sum === num;
+  return sum === Math.abs(num);
 };
 
 const Digitsum = (num) => {
   let sum = 0;
+  num = Math.abs(num); // Use absolute value
+
   while (num > 0) {
     sum += num % 10;
     num = Math.floor(num / 10);
   }
+
   return sum;
 };
 

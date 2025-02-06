@@ -14,7 +14,7 @@ const CACHE_VERSION = 1;
 const getNumberDetails = async (req, res) => {
   const num = req.validNumber;
   const absNum = Math.abs(num);
-  const cacheKey = ${CACHE_VERSION}_${num};
+  const cacheKey = `${CACHE_VERSION}_${num}`;
 
   // Cache check
   const cached = responseCache.get(cacheKey);

@@ -1,15 +1,12 @@
 const {
-  is_Prime,
+  is_prime,
   is_Armstrong,
-  is_Perfect,
+  is_perfect,
   Digitsum,
   getFunFact,
 } = require("../utils/number");
 const NodeCache = require("node-cache");
-const responseCache = new NodeCache({ stdTTL: 3600 });
-
-// Add separate cache for fun facts with longer TTL
-const funFactCache = new NodeCache({ stdTTL: 86400 }); // 24 hours for fun facts
+const responseCache = new NodeCache({ stdTTL: 300, checkperiod: 60 });
 
 // Add at top
 const CACHE_VERSION = 1;
@@ -17,18 +14,25 @@ const CACHE_VERSION = 1;
 const getNumberDetails = async (req, res) => {
   const num = req.validNumber;
   const absNum = Math.abs(num);
-  const cacheKey = `${CACHE_VERSION}_${num}`;
+  const cacheKey = `${CACHE_VERSION}_${absNum}`;
 
   // Cache check
   const cached = responseCache.get(cacheKey);
   if (cached) {
-    return res.json(cached);
+    return res.json({
+      ...cached,
+      number: num,
+      properties: [
+        ...cached.properties.filter((p) => p !== "even" && p !== "odd"),
+        num % 2 === 0 ? "even" : "odd",
+      ],
+    });
   }
 
   // Parallel execution
   const [is_prime, is_perfect, is_armstrong, digit_sum] = await Promise.all([
-    Promise.resolve(num < 0 ? false : is_Prime(absNum)),
-    Promise.resolve(is_Perfect(absNum)),
+    Promise.resolve(num > 1 ? is_prime(num) : false),
+    Promise.resolve(is_perfect(absNum)),
     Promise.resolve(is_Armstrong(absNum)),
     Promise.resolve(Digitsum(absNum)),
   ]);
@@ -56,8 +60,12 @@ const getNumberDetails = async (req, res) => {
     fun_fact,
   };
 
-  // Cache the response
-  responseCache.set(cacheKey, response);
+  // Cache absolute value result
+  responseCache.set(cacheKey, {
+    ...response,
+    number: absNum,
+    properties: response.properties.filter((p) => p !== "even" && p !== "odd"),
+  });
 
   res.json(response);
 };

@@ -12,7 +12,10 @@ const getNumberDetails = async (req, res) => {
 
   // Validate input
   if (isNaN(num)) {
-    return res.status(400).json({ message: "Invalid number" });
+    return res.status(400).json({
+      number: "alphabet",
+      error: true,
+    });
   }
   if (num <= 0) {
     return res.status(400).json({ message: "Number must be greater than 0" });

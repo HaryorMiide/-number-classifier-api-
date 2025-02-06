@@ -16,7 +16,7 @@ const validateNumber = (req, res, next) => {
   if (isNaN(num)) {
     return res.status(400).json({
       error: true,
-      number: "",
+      number: "abc",
     });
   }
 

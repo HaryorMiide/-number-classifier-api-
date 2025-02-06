@@ -5,39 +5,55 @@ const {
   Digitsum,
   getFunFact,
 } = require("../utils/number");
+const NodeCache = require("node-cache");
+const responseCache = new NodeCache({ stdTTL: 300 }); // 5-minute cache
 
 const getNumberDetails = async (req, res) => {
   const num = req.validNumber;
+  const cacheKey = `response_${num}`;
 
-  // Perform calculations
-  const is_prime = num > 1 ? is_Prime(num) : false;
-  const is_perfect = is_Perfect(num);
-  const is_armstrong = is_Armstrong(Math.abs(num));
-  const digit_sum = Digitsum(Math.abs(num));
-
-  // Determine properties
-  let properties = [];
-  if (is_armstrong) properties.push("armstrong");
-  if (num % 2 !== 0) properties.push("odd");
-  else properties.push("even");
-
-  // Fetch fun fact from Numbers API
-  let fun_fact = "No fun fact available";
-  try {
-    fun_fact = await getFunFact(num);
-  } catch (error) {
-    console.error("Error fetching fun fact:", error);
+  // Check cache first
+  const cachedResponse = responseCache.get(cacheKey);
+  if (cachedResponse) {
+    return res.json(cachedResponse);
   }
 
-  // Send response with all required fields
-  res.json({
+  // Parallelize calculations
+  const [is_prime, is_perfect, is_armstrong, digit_sum] = await Promise.all([
+    Promise.resolve(is_Prime(num)),
+    Promise.resolve(is_Perfect(num)),
+    Promise.resolve(is_Armstrong(Math.abs(num))),
+    Promise.resolve(Digitsum(Math.abs(num))),
+  ]);
+
+  // Get fun fact with timeout
+  let fun_fact = "No fun fact available";
+  try {
+    fun_fact = await Promise.race([
+      getFunFact(num),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Fun fact timeout")), 500)
+      ),
+    ]);
+  } catch (error) {
+    console.error("Fun fact error:", error.message);
+  }
+
+  // Build response
+  const properties = [];
+  if (is_armstrong) properties.push("armstrong");
+  properties.push(num % 2 === 0 ? "even" : "odd");
+
+  const response = {
     number: num,
     is_prime,
     is_perfect,
     properties,
     digit_sum,
     fun_fact,
-  });
-};
+  };
 
-module.exports = { getNumberDetails };
+  // Cache the response
+  responseCache.set(cacheKey, response);
+  res.json(response);
+};

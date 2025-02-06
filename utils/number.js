@@ -1,29 +1,50 @@
 const axios = require("axios");
+const NodeCache = require("node-cache");
+const mathCache = new NodeCache({ stdTTL: 3600 }); // Cache for 1 hour
 
+// Optimized prime check with cache
 const is_Prime = (num) => {
-  if (num <= 1) return false; // Prime numbers are positive and >1
-  if (num === 2) return true;
-  if (num % 2 === 0) return false;
+  const cacheKey = `prime_${num}`;
+  const cached = mathCache.get(cacheKey);
+  if (cached !== undefined) return cached;
 
-  for (let i = 3; i <= Math.sqrt(num); i += 2) {
-    if (num % i === 0) return false;
+  if (num <= 1) return false;
+  if (num <= 3) return true;
+  if (num % 2 === 0 || num % 3 === 0) return false;
+
+  let i = 5;
+  const sqrt = Math.sqrt(num);
+  while (i <= sqrt) {
+    if (num % i === 0 || num % (i + 2) === 0) {
+      mathCache.set(cacheKey, false);
+      return false;
+    }
+    i += 6;
   }
+  mathCache.set(cacheKey, true);
   return true;
 };
 
+// Optimized perfect number check with cache
 const is_Perfect = (num) => {
-  if (num <= 1) return false; // Perfect numbers must be positive
+  const cacheKey = `perfect_${num}`;
+  const cached = mathCache.get(cacheKey);
+  if (cached !== undefined) return cached;
 
-  let temp = 1;
-  for (let i = 2; i <= Math.sqrt(num); i++) {
+  if (num <= 1) return false;
+  let sum = 1;
+  const sqrt = Math.sqrt(num);
+
+  for (let i = 2; i <= sqrt; i++) {
     if (num % i === 0) {
-      temp += i;
-      if (i !== num / i) {
-        temp += num / i;
-      }
+      sum += i;
+      const complement = num / i;
+      if (complement !== i) sum += complement;
     }
   }
-  return temp === num;
+  const result = sum === num && num !== 1;
+  mathCache.set(cacheKey, result);
+  return result;
 };
 
 const is_Armstrong = (num) => {

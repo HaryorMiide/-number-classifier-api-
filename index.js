@@ -9,7 +9,11 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Add middleware
-app.use(compression());
+app.use(compression({
+  level: 6, // Balanced compression
+  threshold: 0 // Compress all responses
+}));
+
 app.use(express.json());
 app.use(
   cors({
@@ -17,6 +21,13 @@ app.use(
     methods: "GET",
   })
 );
+
+// Add cache headers middleware
+app.use((req, res, next) => {
+  // Cache successful responses for 1 hour
+  res.set('Cache-Control', 'public, max-age=3600');
+  next();
+});
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
@@ -40,5 +51,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(Server running on port ${port});
 });

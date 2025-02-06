@@ -11,6 +11,7 @@ A simple API that classifies numbers based on properties such as Prime, Armstron
 
 ## 📌 API Endpoint
 ### `GET /api/classify-number?number={num}`
-Example:
-```bash
-GET http://localhost:3000/api/classify-number?number=371
+
+## 🔧 Deployment
+### https://number-classifier-api-wlw8.onrender.com/api/classify-number?number=81
+

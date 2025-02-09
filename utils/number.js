@@ -72,19 +72,17 @@ const Digitsum = (num) => {
   return sum;
 };
 
-const getFunFact = async (num) => {
+const getFunFact = async (number) => {
   try {
-    const response = await axios.get(`http://numbersapi.com/${num}/math?json`, {
-      timeout: 3000,
-      headers: {
-        Accept: "text/plain",
-        "Cache-Control": "no-transform",
-      },
-    });
+    const response = await Promise.race([
+      axios.get(`http://numbersapi.com/${num}/math?json`),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Timeout")), 500)
+      ),
+    ]);
     return response.data.text;
-  } catch (error) {
-    console.error("Fun fact error:", error.message);
-    return `${number} is a number`; // Default fallback that always works
+  } catch {
+    return "Interesting number fact unavailable";
   }
 };
 

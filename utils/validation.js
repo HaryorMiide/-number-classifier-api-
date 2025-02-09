@@ -9,11 +9,11 @@ const validateNumber = (req, res, next) => {
     });
   }
 
-  // Validate if the number contains only digits (no letters, null, or other invalid characters)
-  if (!/^\d+$/.test(number)) {
+  // Validate if the number contains only digits (with optional negative sign)
+  if (!/^-?\d+$/.test(number)) {
     return res.status(400).json({
-      error: true,
       number: number.toString(),
+      error: true,
     });
   }
 

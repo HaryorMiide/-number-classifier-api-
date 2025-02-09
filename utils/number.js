@@ -75,7 +75,7 @@ const Digitsum = (num) => {
 const getFunFact = async (number) => {
   try {
     const response = await axios.get(
-      `http://numbersapi.com/${number}`,
+     `http://numbersapi.com/${num}/math?json`,
       {
         timeout: 3000,
         headers: {

@@ -6,23 +6,23 @@ const {
   getFunFact,
 } = require("../utils/number");
 const NodeCache = require("node-cache");
-const responseCache = new NodeCache({ stdTTL: 3600 });
+const responseCache = new NodeCache({ stdTTL: 300, checkperiod: 60 });
 
-// Add separate cache for fun facts with longer TTL
-const funFactCache = new NodeCache({ stdTTL: 86400 }); // 24 hours for fun facts
-
-// Add at top
 const CACHE_VERSION = 1;
 
 const getNumberDetails = async (req, res) => {
   const num = req.validNumber;
   const absNum = Math.abs(num);
-  const cacheKey = `${CACHE_VERSION}_${num}`;
+  const cacheKey = `${CACHE_VERSION}_${absNum}`;
 
   // Cache check
   const cached = responseCache.get(cacheKey);
   if (cached) {
-    return res.json(cached);
+    return res.json({
+      ...cached,
+      number: num,
+      properties: num % 2 === 0 ? ["even"] : ["odd"],
+    });
   }
 
   // Parallel execution
@@ -33,17 +33,17 @@ const getNumberDetails = async (req, res) => {
     Promise.resolve(Digitsum(absNum)),
   ]);
 
+  // Correct properties formatting
+  const properties = is_armstrong
+    ? num % 2 === 0 ? ["armstrong", "even"] : ["armstrong", "odd"]
+    : num % 2 === 0 ? ["even"] : ["odd"];
+
   // Get fun fact with fallback
   let fun_fact;
   try {
-    console.log('Fetching fun fact for number:', num);
     fun_fact = await getFunFact(num);
-    console.log('Received fun fact:', fun_fact);
-  } catch (error) {
-    console.error('Error in controller while getting fun fact:', error);
-    fun_fact = is_armstrong
-      ? `${num} is an Armstrong number`
-      : "Interesting number fact";
+  } catch {
+    fun_fact = is_armstrong ? `${num} is an Armstrong number` : "Interesting number fact";
   }
 
   // Build response
@@ -51,19 +51,13 @@ const getNumberDetails = async (req, res) => {
     number: num,
     is_prime,
     is_perfect,
-    properties: [
-      ...(is_armstrong ? ["armstrong"] : []),
-      num % 2 === 0 ? "even" : "odd",
-    ],
+    properties,
     digit_sum,
     fun_fact,
   };
 
-  // Cache the response
+  // Cache result
   responseCache.set(cacheKey, response);
-
-  // Log the response before sending (for debugging)
-  console.log('Sending response:', response);
 
   res.json(response);
 };

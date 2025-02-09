@@ -84,7 +84,7 @@ const getFunFact = async (number) => {
         }
       }
     );
-    return response.data;
+     return response.data.text;
   } catch (error) {
     console.error('Fun fact error:', error.message);
     return `${number} is a number`; // Default fallback that always works

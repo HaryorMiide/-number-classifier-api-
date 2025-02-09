@@ -75,7 +75,7 @@ const Digitsum = (num) => {
 const getFunFact = async (number) => {
   try {
     const response = await Promise.race([
-      axios.get(`http://numbersapi.com/${num}/math?json`),
+      axios.get(`http://numbersapi.com/${number}/math?json`),
       new Promise((_, reject) =>
         setTimeout(() => reject(new Error("Timeout")), 500)
       ),

@@ -13,5 +13,6 @@ A simple API that classifies numbers based on properties such as Prime, Armstron
 ### `GET /api/classify-number?number={num}`
 
 ## 🔧 Deployment
-### https://number-classifier-api-wlw8.onrender.com/api/classify-number?number=81
+###(https://number-classifier-api-wlw8.onrender.com/api/classify-number)
+INSTALLATION & SETUP git clone https://github.com/HaryorMiide/-number-classifier-api-.git
 

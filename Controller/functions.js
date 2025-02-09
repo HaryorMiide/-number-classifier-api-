@@ -34,9 +34,9 @@ const getNumberDetails = async (req, res) => {
   ]);
 
   // Correct properties formatting
-  const properties = is_armstrong
-    ? num % 2 === 0 ? ["armstrong", "even"] : ["armstrong", "odd"]
-    : num % 2 === 0 ? ["even"] : ["odd"];
+const properties = is_Armstrong(Math.abs(num)) 
+  ? num % 2 === 0 ? ["armstrong", "even"] : ["armstrong", "odd"]
+  : num % 2 === 0 ? ["even"] : ["odd"];
 
   // Get fun fact with fallback
   let fun_fact;
